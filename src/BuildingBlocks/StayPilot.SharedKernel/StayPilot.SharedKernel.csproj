@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>StayPilot.SharedKernel</RootNamespace>
+    <AssemblyName>StayPilot.SharedKernel</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    SharedKernel has NO external dependencies by design.
+    It holds the pure domain building blocks shared by every module:
+    entities, value objects, domain events, results, and the marker
+    interfaces (tenancy, auditing, soft-delete) that infrastructure
+    reacts to. Keeping it dependency-free protects the domain layer.
+  -->
+
+</Project>

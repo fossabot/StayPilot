@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/BuildingBlocks/">
+    <Project Path="BuildingBlocks/StayPilot.Application/StayPilot.Application.csproj" />
+    <Project Path="BuildingBlocks/StayPilot.Infrastructure/StayPilot.Infrastructure.csproj" />
+    <Project Path="BuildingBlocks/StayPilot.SharedKernel/StayPilot.SharedKernel.csproj" />
+  </Folder>
+</Solution>
