@@ -22,15 +22,20 @@ StayPilot-Code/
 │
 ├── .github/workflows/ci.yml          # STUB — `jobs: {}` (no pipeline yet)
 │
-├── docs/                             # Architecture & governance docs (all one-line stubs)
-│   ├── 00_Engineering_Bible/README.md
-│   ├── 01_Product/001_Product_Vision.md
-│   ├── 02_Architecture/001_System_Architecture.md
-│   ├── 03_Domain/001_Domain_Model.md
-│   ├── 04_Database/001_Database_Overview.md
-│   ├── 05_API/001_API_Standards.md
-│   ├── 06_AI/001_AI_Architecture.md
-│   └── StayPilot_Kickoff_Pack.docx   # One sentence of content
+├── docs/                             # All Markdown now (docx removed, deduped) as of 2026-07-26
+│   ├── README.md                                 # Doc index + canonical-conflict hierarchy
+│   │                                             #   (ADRs > Eng Bible > Domain > PRDs > Architecture > Product)
+│   ├── 00_Engineering_Bible/
+│   │   ├── ENG-000_StayPilot_Constitution.md     # v1 governance (15 principles, eng standards, DoD)
+│   │   └── README.md                             # STUB (one line)
+│   ├── 01_Product/
+│   │   ├── 001_Product_Vision.md                 # STUB (one line)
+│   │   └── 006_Project_Charter.md                # Charter + 5-competitor analysis (converted from docx)
+│   ├── 02_Architecture/001_System_Architecture.md# STUB
+│   ├── 03_Domain/001_Domain_Model.md             # STUB — no aggregate detail yet
+│   ├── 04_Database/001_Database_Overview.md      # STUB
+│   ├── 05_API/001_API_Standards.md               # STUB
+│   └── 06_AI/001_AI_Architecture.md              # STUB
 │
 ├── prds/                            # Product requirements (both "TBD")
 │   ├── PRD-001-Authentication.md
@@ -53,11 +58,19 @@ StayPilot-Code/
 │       │   ├── Auditing/              #   IAuditable, ISoftDeletable
 │       │   ├── Results/               #   Result, Result<T>, Error
 │       │   └── Abstractions/          #   IClock
-│       └── StayPilot.Application/      # ✅ CQRS core (references SharedKernel + FluentValidation)
-│           ├── Messaging/             #   IRequest/ICommand/IQuery, dispatcher, pipeline
-│           ├── Behaviors/             #   Logging, Performance, Validation, Authorization (+ Tx/Idempotency seams)
-│           ├── Abstractions/          #   ICurrentTenant, ICurrentUser, IUnitOfWork, IIdempotencyStore
+│       ├── StayPilot.Application/      # ✅ CQRS core (references SharedKernel + FluentValidation)
+│       │   ├── Messaging/             #   IRequest/ICommand/IQuery, dispatcher, domain-event dispatch
+│       │   ├── Behaviors/             #   Logging, Performance, Validation, Authorization (+ Tx/Idempotency seams)
+│       │   ├── Abstractions/          #   ICurrentTenant, ICurrentUser, IUnitOfWork, IIdempotencyStore
+│       │   └── DependencyInjection.cs
+│       └── StayPilot.Infrastructure/   # ✅ EF Core 10 tenancy machinery
+│           ├── Persistence/           #   StayPilotDbContext (tenant+soft-delete filters), interceptor, UnitOfWork
+│           ├── Messaging/             #   DomainEventDispatcher (in-process)
+│           ├── Behaviors/             #   Transaction, Idempotency
+│           ├── Idempotency/           #   InMemoryIdempotencyStore (Redis TODO)
+│           ├── Time/                  #   SystemClock
 │           └── DependencyInjection.cs
+│   StayPilot.slnx                     # .NET 10 XML solution (3 projects, builds clean)
 │
 └── tests/                           # EMPTY (no test projects yet)
 ```
@@ -185,11 +198,24 @@ Properties, Cabins, Guests, Reservations, plus Identity/Auth and AI.
       for Postgres/Redis).
 
 ### Product / documentation
-- [ ] Write real content for all `docs/` files (currently one-liners).
-- [ ] Author **PRD-001 (Authentication)** and **PRD-002 (Organization)** — both are "TBD",
+- [x] Governance added and normalized to Markdown: Constitution (`ENG-000`), Project Charter +
+      competitive analysis (`01_Product/006`), doc index with canonical-conflict hierarchy (`docs/README.md`).
+- [x] **Doc hygiene done:** `.docx` files removed, Constitution deduped to one version, all docs
+      now Markdown (diff-able) — satisfies the Constitution's "Documentation as Code" principle.
+- [x] **Stack contradictions resolved by removal:** the `.NET 9` / `MediatR` `.docx` files no
+      longer exist. *(Still worth recording the decisions positively as ADRs — see below.)*
+- [ ] **Fill the topic docs — still one-line stubs:** **System Architecture**, **Domain Model**
+      (aggregate boundaries/invariants), **Database** (ERD, row-level tenancy, naming),
+      **API Standards** (error envelope from `Error`/`ErrorType`, pagination, versioning),
+      **AI Architecture** (provider abstraction, RAG), and the Engineering Bible README.
+- [ ] **Recover/relocate the removed product-strategy content** if still wanted: Product Vision &
+      Business Strategy (MVP scope, target market, metrics) and the PMS/CRS research (S&R) are no
+      longer in the repo — only the one-line `001_Product_Vision.md` stub + the Charter remain.
+- [ ] Author **PRD-001 (Authentication)** and **PRD-002 (Organization)** — both still say "TBD",
       so auth/org features cannot be built to spec yet.
 - [ ] Add ADRs recording the decisions (.NET 10 over 9, no-MediatR, FluentAssertions 7.x,
-      row-level tenancy, pgvector-stable-only).
+      row-level tenancy, pgvector-stable-only). No `docs/07_ADR/` (or equivalent) exists yet,
+      though `docs/README.md` ranks ADRs as the highest authority.
 
 ### Infra / DevOps
 - [ ] `docker-compose.yml`: Postgres 17 (pgvector image) + Redis 7.
@@ -200,51 +226,79 @@ Properties, Cabins, Guests, Reservations, plus Identity/Auth and AI.
 
 ## 6. Documentation Quality
 
-**Current state: skeletal.** The information architecture is thoughtfully laid out
-(`00_Engineering_Bible` … `06_AI`, plus a `prds/` folder), which signals good intent — but
-**every doc is a single sentence and both PRDs say "TBD."** The `.docx` kickoff pack likewise
-contains one line.
+**Current state: clean, well-organized, and consistent — but thin on technical substance.**
+As of 2026-07-26 the docs were consolidated: the earlier `.docx` sprawl and duplicate
+Constitutions were removed, everything is Markdown inside the numbered topic folders, and a
+`docs/README.md` index now defines a **canonical-document conflict hierarchy**
+(ADRs > Engineering Bible > Domain > PRDs > Architecture > Product), with a rule that archived
+docs must never drive implementation.
 
-Implications:
-- `CLAUDE.md` mandates "read docs before coding," yet the docs currently carry almost no
-  decision content — so the *real* source of truth is presently this summary and the code.
-- There is no ADR trail, no domain glossary, no ERD, no API contract, no sequence/Mermaid
-  diagrams yet (the `diagrams/` folder is empty).
+**Strengths:**
+- **Governance is solid and now the single source of truth.** `ENG-000` Constitution: 15
+  principles, engineering standards ("every feature must include business objective, requirements,
+  domain model, events, APIs, security review, AI design, test strategy, docs"), Definition of
+  Done, amendment policy — all reinforcing the architecture already built (DDD, event-driven,
+  multi-tenant, RBAC, CQRS, observability, explainable/human-in-the-loop AI).
+- **Project Charter** (`01_Product/006`): documentation-first ground rules and a real competitor
+  analysis (Cloudbeds, Mews, Guesty, Hostaway, Little Hotelier) with StayPilot's positioning.
+- **Hygiene fixed:** all Markdown (diff-able, PR-reviewable), one canonical Constitution, and the
+  previous doc-vs-code contradictions (docs asserting `.NET 9` / `MediatR`) are gone. This now
+  honors the Constitution's own "Documentation as Code" principle.
 
-**Strength:** structure and conventions are in place and consistent.
-**Gap:** substance. Docs need to be filled before/with the code they govern.
+**Gaps:**
+- **Technical docs are still one-line stubs:** System Architecture, Domain Model (aggregates,
+  invariants, bounded-context boundaries), Database (ERD, row-level tenancy, naming), API Standards
+  (error envelope, pagination, versioning), AI Architecture (provider abstraction, RAG), and the
+  Engineering Bible README. `diagrams/` is still empty.
+- **No ADR trail yet** — despite `docs/README.md` ranking ADRs as the highest authority, there is
+  no ADR folder. The locked decisions (.NET 10, no-MediatR, tenancy model, licensing pins) are
+  recorded only in this summary and the code.
+- **Some product-strategy content was dropped in the cleanup.** The MVP scope / target-market /
+  metrics material and the PMS/CRS research (S&R) are no longer present; only the Charter and a
+  one-line Product Vision stub remain. Recover or re-home if still wanted.
+- **Both PRDs remain "TBD."**
+
+**Net:** governance + structure + hygiene = strong; technical specification (domain, DB, API, AI)
+and the ADR trail = the current gap.
 
 ---
 
 ## 7. Recommendations
 
-1. **Unblock the build first.** Install the .NET 10 SDK, then create the solution, restore,
-   build the two existing libraries, and pin verified package versions. Do not author more
-   layers blind — Infrastructure onward binds to external packages whose compatibility must
-   be confirmed at restore.
+1. **Stand up the ADR trail — it's the top of your own authority hierarchy but doesn't exist.**
+   `docs/README.md` ranks ADRs #1, yet there is no ADR folder. Create one and record the decisions
+   already made: .NET 10 (over 9), no-MediatR (custom dispatcher), FluentAssertions 7.x,
+   FluentValidation 11.x, row-level tenancy, pgvector-stable-only. This makes the "why" durable
+   and prevents well-meaning reversals. *(Doc hygiene and the earlier .NET 9/MediatR contradictions
+   are already resolved — the `.docx` files were removed and everything is Markdown now.)*
 
-2. **Make the docs real, incrementally, alongside code (honor `CLAUDE.md`).** For each module,
-   write the domain model section + relevant ADR *before or with* the implementation. Start
-   with: System Architecture (the modular-monolith + layering diagram), Domain Model (aggregate
-   boundaries), Database Overview (row-level tenancy + naming), API Standards (error envelope
-   from `Error`/`ErrorType`, pagination, versioning), and AI Architecture (provider abstraction).
+2. **Fill the *technical* docs alongside code (honor `CLAUDE.md`).** Governance is strong; still
+   one-line stubs: System Architecture, Domain Model (aggregate boundaries/invariants), Database
+   Overview (ERD + row-level tenancy + naming), API Standards (error envelope from
+   `Error`/`ErrorType`, pagination, versioning), and AI Architecture (provider abstraction, RAG).
+   Write each with the module it governs.
 
-3. **Write the two PRDs before building their features.** Authentication and Organization are
+3. **Recover the dropped product-strategy content if it's still needed.** The cleanup removed the
+   Product Vision & Business Strategy (MVP scope, target market, metrics) and PMS/CRS research;
+   only the Charter and a stub vision remain. Decide whether to re-home them as Markdown or treat
+   them as intentionally archived.
+
+4. **Write the two PRDs before building their features.** Authentication and Organization are
    foundational and currently unspecified; building them without requirements guarantees rework.
 
-4. **Land the tenancy enforcement end-to-end early** and cover it with tests. Row-level
+5. **Land the tenancy enforcement end-to-end early** and cover it with tests. Row-level
    multi-tenancy is only safe if the global query filter, tenant stamping, and middleware
    resolution are all verified together — a single missed filter is a cross-tenant leak.
    Add an architecture/integration test that fails if a tenant-owned entity lacks a filter.
 
-5. **Record the licensing-driven choices as ADRs** so they are not silently "corrected" later:
+6. **Record the licensing-driven choices as ADRs** so they are not silently "corrected" later:
    no MediatR (v13+ commercial), FluentAssertions pinned to 7.x (v8+ commercial), FluentValidation
    on the 11.x line, and Semantic Kernel's pgvector connector avoided while it is preview-only.
 
-6. **Add CI as soon as the build is green** (restore/build/test on .NET 10) and stand up
+7. **Add CI as soon as the build is green** (restore/build/test on .NET 10) and stand up
    `docker-compose` (Postgres 17 + Redis 7) so integration tests and local dev work day one.
 
-7. **Establish the reference vertical slice (Organizations) as the template** the team copies
+8. **Establish the reference vertical slice (Organizations) as the template** the team copies
    for every subsequent module — aggregate, command/query, validator, EF config, endpoint,
    and tests — so DDD/Clean/CQRS conventions stay consistent across the modular monolith.
 
