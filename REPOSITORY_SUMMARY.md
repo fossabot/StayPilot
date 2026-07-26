@@ -22,20 +22,23 @@ StayPilot-Code/
 │
 ├── .github/workflows/ci.yml          # STUB — `jobs: {}` (no pipeline yet)
 │
-├── docs/                             # All Markdown now (docx removed, deduped) as of 2026-07-26
-│   ├── README.md                                 # Doc index + canonical-conflict hierarchy
-│   │                                             #   (ADRs > Eng Bible > Domain > PRDs > Architecture > Product)
-│   ├── 00_Engineering_Bible/
-│   │   ├── ENG-000_StayPilot_Constitution.md     # v1 governance (15 principles, eng standards, DoD)
-│   │   └── README.md                             # STUB (one line)
-│   ├── 01_Product/
-│   │   ├── 001_Product_Vision.md                 # STUB (one line)
-│   │   └── 006_Project_Charter.md                # Charter + 5-competitor analysis (converted from docx)
-│   ├── 02_Architecture/001_System_Architecture.md# STUB
-│   ├── 03_Domain/001_Domain_Model.md             # STUB — no aggregate detail yet
-│   ├── 04_Database/001_Database_Overview.md      # STUB
-│   ├── 05_API/001_API_Standards.md               # STUB
-│   └── 06_AI/001_AI_Architecture.md              # STUB
+├── docs/                             # Full Markdown structure scaffolded 2026-07-26
+│   ├── README.md                     # Index + canonical-conflict hierarchy (ADRs highest)
+│   ├── 00_Engineering_Bible/         # ENG-000 Constitution (content) + ENG-001..006 (draft stubs)
+│   ├── 01_Product/                   # 001 Vision, 002 Strategy, 003 Market, 004 Competitive,
+│   │                                 #   005 MVP, 006 Charter (content), 007 Roadmap
+│   ├── 02_Architecture/              # 001..009: System, Modular Monolith, Clean, DDD, CQRS,
+│   │                                 #   Event-Driven, Multi-Tenancy, AI, Security (draft stubs)
+│   ├── 03_Domain/                    # 001 Hospitality Model + 002..015 per-context (draft stubs)
+│   ├── 04_Database/                  # 001..006: Architecture, ERD, Naming, Indexing, Migrations,
+│   │                                 #   Multi-Tenant Data Model (draft stubs)
+│   ├── 05_API/                       # 001..008: Standards, Errors, Paging, Filter, Sort,
+│   │                                 #   Versioning, Webhooks, OpenAPI (draft stubs)
+│   ├── 06_AI/                        # 001..007: Architecture, Agents, RAG, Prompts, Vector,
+│   │                                 #   Memory, Providers (draft stubs)
+│   ├── 07_Operations/                # Deployment, Monitoring, Logging, Backup, DR, Security (stubs)
+│   ├── ADR/                          # ✅ ADR-0001..0006 — written with real content (see §6)
+│   └── assets/                       # (.gitkeep) images/diagrams
 │
 ├── prds/                            # Product requirements (both "TBD")
 │   ├── PRD-001-Authentication.md
@@ -204,18 +207,19 @@ Properties, Cabins, Guests, Reservations, plus Identity/Auth and AI.
       now Markdown (diff-able) — satisfies the Constitution's "Documentation as Code" principle.
 - [x] **Stack contradictions resolved by removal:** the `.NET 9` / `MediatR` `.docx` files no
       longer exist. *(Still worth recording the decisions positively as ADRs — see below.)*
-- [ ] **Fill the topic docs — still one-line stubs:** **System Architecture**, **Domain Model**
-      (aggregate boundaries/invariants), **Database** (ERD, row-level tenancy, naming),
-      **API Standards** (error envelope from `Error`/`ErrorType`, pagination, versioning),
-      **AI Architecture** (provider abstraction, RAG), and the Engineering Bible README.
-- [ ] **Recover/relocate the removed product-strategy content** if still wanted: Product Vision &
-      Business Strategy (MVP scope, target market, metrics) and the PMS/CRS research (S&R) are no
-      longer in the repo — only the one-line `001_Product_Vision.md` stub + the Charter remain.
+- [x] **Full docs structure scaffolded** (`00_Engineering_Bible` … `07_Operations`, `ADR/`,
+      `assets/`) — ~65 topic files created as consistent `Draft` stubs; index in `docs/README.md`.
+- [x] **ADR trail established** — `ADR-0001..0006` written with real content: .NET 10, custom
+      dispatcher, multi-tenancy, AI abstraction, licensing policy, modular monolith.
+- [ ] **Fill the topic docs — currently `Draft` stubs:** the ~65 scaffolded files (System
+      Architecture, Domain Model + per-context, Database/ERD/naming, API standards, AI, Operations)
+      still need real content, written with the module/topic they govern.
+- [ ] **Re-home the removed product-strategy content** if still wanted: the earlier Product Vision
+      & Business Strategy (MVP scope, target market, metrics) and PMS/CRS research (S&R) were
+      dropped in the cleanup; new `001_Product_Vision.md`, `002_Business_Strategy.md`, `005_MVP.md`
+      stubs now await that content.
 - [ ] Author **PRD-001 (Authentication)** and **PRD-002 (Organization)** — both still say "TBD",
       so auth/org features cannot be built to spec yet.
-- [ ] Add ADRs recording the decisions (.NET 10 over 9, no-MediatR, FluentAssertions 7.x,
-      row-level tenancy, pgvector-stable-only). No `docs/07_ADR/` (or equivalent) exists yet,
-      though `docs/README.md` ranks ADRs as the highest authority.
 
 ### Infra / DevOps
 - [ ] `docker-compose.yml`: Postgres 17 (pgvector image) + Redis 7.
@@ -226,10 +230,11 @@ Properties, Cabins, Guests, Reservations, plus Identity/Auth and AI.
 
 ## 6. Documentation Quality
 
-**Current state: clean, well-organized, and consistent — but thin on technical substance.**
-As of 2026-07-26 the docs were consolidated: the earlier `.docx` sprawl and duplicate
-Constitutions were removed, everything is Markdown inside the numbered topic folders, and a
-`docs/README.md` index now defines a **canonical-document conflict hierarchy**
+**Current state: comprehensive, well-organized structure with governance + ADRs in place —
+most topic docs are now `Draft` scaffolds awaiting content.** As of 2026-07-26 the docs were
+consolidated to Markdown and then expanded into the full target structure: `00_Engineering_Bible`
+through `07_Operations`, an `ADR/` folder, and `assets/`. `docs/README.md` indexes it all and
+defines a **canonical-document conflict hierarchy**
 (ADRs > Engineering Bible > Domain > PRDs > Architecture > Product), with a rule that archived
 docs must never drive implementation.
 
@@ -241,42 +246,40 @@ docs must never drive implementation.
   multi-tenant, RBAC, CQRS, observability, explainable/human-in-the-loop AI).
 - **Project Charter** (`01_Product/006`): documentation-first ground rules and a real competitor
   analysis (Cloudbeds, Mews, Guesty, Hostaway, Little Hotelier) with StayPilot's positioning.
+- **ADR trail exists and carries real content.** `ADR-0001..0006` capture the load-bearing
+  decisions — .NET 10, custom dispatcher (no MediatR), row-level multi-tenancy, AI provider
+  abstraction, dependency-licensing policy, modular monolith — with context, consequences, and
+  alternatives. These are now the highest authority per `docs/README.md`.
 - **Hygiene fixed:** all Markdown (diff-able, PR-reviewable), one canonical Constitution, and the
-  previous doc-vs-code contradictions (docs asserting `.NET 9` / `MediatR`) are gone. This now
-  honors the Constitution's own "Documentation as Code" principle.
+  previous doc-vs-code contradictions (docs asserting `.NET 9` / `MediatR`) are gone — honoring the
+  Constitution's own "Documentation as Code" principle.
 
 **Gaps:**
-- **Technical docs are still one-line stubs:** System Architecture, Domain Model (aggregates,
-  invariants, bounded-context boundaries), Database (ERD, row-level tenancy, naming), API Standards
-  (error envelope, pagination, versioning), AI Architecture (provider abstraction, RAG), and the
-  Engineering Bible README. `diagrams/` is still empty.
-- **No ADR trail yet** — despite `docs/README.md` ranking ADRs as the highest authority, there is
-  no ADR folder. The locked decisions (.NET 10, no-MediatR, tenancy model, licensing pins) are
-  recorded only in this summary and the code.
-- **Some product-strategy content was dropped in the cleanup.** The MVP scope / target-market /
-  metrics material and the PMS/CRS research (S&R) are no longer present; only the Charter and a
-  one-line Product Vision stub remain. Recover or re-home if still wanted.
+- **~65 topic docs are `Draft` scaffolds** with a title + placeholder, not yet real content:
+  System Architecture, the per-context Domain docs (aggregates, invariants, boundaries),
+  Database/ERD/naming, API standards detail, AI architecture, and Operations. `diagrams/` is empty
+  (though `docs/assets/` now exists for them).
+- **Some product-strategy content was dropped in an earlier cleanup.** The MVP scope /
+  target-market / metrics material and the PMS/CRS research (S&R) are no longer present; the new
+  `002_Business_Strategy.md` / `003_Target_Market.md` / `005_MVP.md` stubs await that content.
 - **Both PRDs remain "TBD."**
 
-**Net:** governance + structure + hygiene = strong; technical specification (domain, DB, API, AI)
-and the ADR trail = the current gap.
+**Net:** governance + structure + hygiene + ADRs = strong; the technical specification content
+(domain, DB, API, AI, operations) inside the scaffolded stubs = the current gap.
 
 ---
 
 ## 7. Recommendations
 
-1. **Stand up the ADR trail — it's the top of your own authority hierarchy but doesn't exist.**
-   `docs/README.md` ranks ADRs #1, yet there is no ADR folder. Create one and record the decisions
-   already made: .NET 10 (over 9), no-MediatR (custom dispatcher), FluentAssertions 7.x,
-   FluentValidation 11.x, row-level tenancy, pgvector-stable-only. This makes the "why" durable
-   and prevents well-meaning reversals. *(Doc hygiene and the earlier .NET 9/MediatR contradictions
-   are already resolved — the `.docx` files were removed and everything is Markdown now.)*
+1. **Fill the scaffolded topic docs alongside the code they govern (honor `CLAUDE.md`).** The full
+   structure and the ADR trail now exist; the work is content. Prioritize what unblocks the next
+   build phase: `02_Architecture/007_Multi_Tenancy.md`, the `03_Domain` Organization/Property/
+   Reservation docs, `04_Database` (ERD + multi-tenant data model), and `05_API` (error envelope
+   from `Error`/`ErrorType`, pagination, versioning). Each ADR already gives these a spine to expand.
 
-2. **Fill the *technical* docs alongside code (honor `CLAUDE.md`).** Governance is strong; still
-   one-line stubs: System Architecture, Domain Model (aggregate boundaries/invariants), Database
-   Overview (ERD + row-level tenancy + naming), API Standards (error envelope from
-   `Error`/`ErrorType`, pagination, versioning), and AI Architecture (provider abstraction, RAG).
-   Write each with the module it governs.
+2. **Keep ADRs and docs in lockstep with decisions.** The six ADRs are the source of truth for the
+   "why"; when a topic doc is written, link it to its ADR, and add a new ADR (not a silent doc edit)
+   whenever a load-bearing decision changes — per the Constitution's amendment policy.
 
 3. **Recover the dropped product-strategy content if it's still needed.** The cleanup removed the
    Product Vision & Business Strategy (MVP scope, target market, metrics) and PMS/CRS research;
